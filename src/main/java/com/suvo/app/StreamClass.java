@@ -23,52 +23,38 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 public class StreamClass {
 
     public static void main(String args[]){
-        String s3FileURL = "https://aepbatch.s3.eu-north-1.amazonaws.com/new/SBProgramEnrollmentSchema_aepbatch11.json";
-        String bucketName = "aepbatch";
-        String key = "new/SBProgramEnrollmentSchema_aepbatch11.json";
+        //String s3FileURL = "https://aepbatch.s3.eu-north-1.amazonaws.com/new/SBProgramEnrollmentSchema_aepbatch11.json";
+        Util util = new Util();
+        Handler handler = new Handler();
+        Properties prop = util.prop();
+        String bucketName = prop.getProperty("bucket");
+        String key = "new/SBProgramEnrollmentSchema_aepbatch12.json";
         Region region = Region.EU_NORTH_1;
-        String targetApiURL = "https://platform.adobe.io/data/foundation/import/batches/01K1AYJWWMQPV54ZP3G9NZQDFM/datasets/68629fedce7d0f2b5ab3cabd/files/"+key;
+
+
+        String targetApiURL = "https://platform.adobe.io/data/foundation/import/batches/01K1BB7QE2XSZKTS68FSBRWB19/datasets/68629fedce7d0f2b5ab3cabd/files/"+key;
 
         try(S3Client s3Client = S3Client.builder().httpClientBuilder(ApacheHttpClient.builder()).build();
-            CloseableHttpClient httpClient = HttpClients.createDefault()
-        ){
-
+            CloseableHttpClient httpClient = HttpClients.createDefault()){
             System.out.println("Requesting S3 object: " + key + " from bucket: " + bucketName);
 
             GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
+            handler.getBucketList(s3Client);
 
             try(ResponseInputStream<GetObjectResponse> s3InputStream = s3Client.getObject(getObjectRequest)){
-/*
-                File localFile = new File("E:\\dwn\\"+key);
-                FileOutputStream fos = new FileOutputStream(localFile);
-                byte[] buffer = new byte[1024];
-                int bytesRead;
 
-                while ((bytesRead = s3InputStream.read(buffer)) != -1){
-                    fos.write(buffer,0,bytesRead);
-                }
-
-                s3InputStream.close();
-                fos.close();
-                System.out.println("File download done");*/
-
-                /*HttpEntity entity = MultipartEntityBuilder.create()
-                        .addBinaryBody("file",s3InputStream, ContentType.APPLICATION_OCTET_STREAM,key)
-                        .addTextBody("source","s3")
-                        .build();*/
-
-                //System.out.println("Request Entity: "+EntityUtils.toString(entity));
                 HttpEntity requestEntity = new InputStreamEntity(s3InputStream,ContentType.APPLICATION_OCTET_STREAM);
                 HttpPut httpPut = new HttpPut(targetApiURL);
                 httpPut.setEntity(requestEntity);
-                //httpPut.setHeader("Authorization","");
-                httpPut.setHeader("x-api-key","19e98cbbd3d24491b94745a7e029a65c");
-                httpPut.setHeader("x-gw-ims-org-id","856F5BDE58C158A50A495D50@AdobeOrg");
-                httpPut.setHeader("x-sandbox-name","training-ucp");
+                httpPut.setHeader("Authorization",prop.getProperty("authorization"));
+                httpPut.setHeader("x-api-key",prop.getProperty("key"));
+                httpPut.setHeader("x-gw-ims-org-id",prop.getProperty("org"));
+                httpPut.setHeader("x-sandbox-name",prop.getProperty("sandbox"));
                 httpPut.setHeader("Content-Type","application/octet-stream");
 
                 System.out.println("Streaming file to API: " + targetApiURL);
