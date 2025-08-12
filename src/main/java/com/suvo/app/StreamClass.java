@@ -18,11 +18,12 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.util.List;
 import java.util.Properties;
 
 public class StreamClass {
@@ -33,42 +34,55 @@ public class StreamClass {
         Handler handler = new Handler();
         Properties prop = util.prop();
         String bucketName = prop.getProperty("bucket");
-        String key = "new/SBProgramEnrollmentSchema_aepbatch12.json";
-        Region region = Region.EU_NORTH_1;
-
-
-        String targetApiURL = "https://platform.adobe.io/data/foundation/import/batches/01K1BB7QE2XSZKTS68FSBRWB19/datasets/68629fedce7d0f2b5ab3cabd/files/"+key;
+        //String key = "new/SBProgramEnrollmentSchema_aepbatch41_42.json";
 
         try(S3Client s3Client = S3Client.builder().httpClientBuilder(ApacheHttpClient.builder()).build();
             CloseableHttpClient httpClient = HttpClients.createDefault()){
-            System.out.println("Requesting S3 object: " + key + " from bucket: " + bucketName);
 
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
-            handler.getBucketList(s3Client);
-
-            try(ResponseInputStream<GetObjectResponse> s3InputStream = s3Client.getObject(getObjectRequest)){
-
-                HttpEntity requestEntity = new InputStreamEntity(s3InputStream,ContentType.APPLICATION_OCTET_STREAM);
-                HttpPut httpPut = new HttpPut(targetApiURL);
-                httpPut.setEntity(requestEntity);
-                httpPut.setHeader("Authorization",prop.getProperty("authorization"));
-                httpPut.setHeader("x-api-key",prop.getProperty("key"));
-                httpPut.setHeader("x-gw-ims-org-id",prop.getProperty("org"));
-                httpPut.setHeader("x-sandbox-name",prop.getProperty("sandbox"));
-                httpPut.setHeader("Content-Type","application/octet-stream");
-
-                System.out.println("Streaming file to API: " + targetApiURL);
-
-                httpClient.execute(httpPut,response ->{
-                    System.out.println("----------------------------------------");
-                    System.out.println("API Response Status: " + response.getCode());
-                    String responseBody = EntityUtils.toString(response.getEntity());
-                    System.out.println("-------------------------------------");
-                    System.out.println(responseBody);
-                    EntityUtils.consume(response.getEntity());
-                    return null;
-                });
+            List<S3Object> bucketContent = handler.getBucketList(s3Client);
+            if(bucketContent.isEmpty())
+            {
+                System.out.println("Bucket content is empty");
             }
+            else{
+                System.out.println("Bucket content size: "+bucketContent.size());
+            }
+            for (S3Object obj: bucketContent) {
+                System.out.println("Inside bucket content");
+                String key = obj.key();
+                if(!key.equals("new/")) {
+                    System.out.println("Requesting S3 object: " + key + " from bucket: " + bucketName);
+                    GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
+
+                    String targetApiURL = "https://platform.adobe.io/data/foundation/import/batches/01K2F22PQBGXA2KW35R93RCNRV/datasets/68629fedce7d0f2b5ab3cabd/files/" + key;
+
+                    try (ResponseInputStream<GetObjectResponse> s3InputStream = s3Client.getObject(getObjectRequest)) {
+
+                        HttpEntity requestEntity = new InputStreamEntity(s3InputStream, ContentType.APPLICATION_OCTET_STREAM);
+                        HttpPut httpPut = new HttpPut(targetApiURL);
+                        httpPut.setEntity(requestEntity);
+                        httpPut.setHeader("Authorization", prop.getProperty("authorization"));
+                        httpPut.setHeader("x-api-key", prop.getProperty("key"));
+                        httpPut.setHeader("x-gw-ims-org-id", prop.getProperty("org"));
+                        httpPut.setHeader("x-sandbox-name", prop.getProperty("sandbox"));
+                        httpPut.setHeader("Content-Type", "application/octet-stream");
+
+                        System.out.println("Streaming file to API: " + targetApiURL);
+
+                        httpClient.execute(httpPut, response -> {
+                            System.out.println("----------------------------------------");
+                            System.out.println("API Response Status: " + response.getCode());
+                            String responseBody = EntityUtils.toString(response.getEntity());
+                            System.out.println("-------------------------------------");
+                            System.out.println(responseBody);
+                            EntityUtils.consume(response.getEntity());
+                            return null;
+                        });
+                    }
+                }
+
+            }
+
         }catch (IOException e){
             e.printStackTrace();
         }

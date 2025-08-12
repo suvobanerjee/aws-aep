@@ -1,8 +1,8 @@
 package com.suvo.app;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Handler {
@@ -77,7 +77,8 @@ public class Handler {
         System.out.printf("%n");
     }
 
-    public void getBucketList(S3Client s3Client){
+    public List<S3Object> getBucketList(S3Client s3Client){
+        List<S3Object> bucketContent = new ArrayList<>();
         try {
             System.out.println("Getting bucket List!!!!");
             ListBucketsResponse bucketList = s3Client.listBuckets();
@@ -92,15 +93,17 @@ public class Handler {
 
                 ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
 
-                List<S3Object> bucketContent = listObjectsV2Response.contents();
+                bucketContent = listObjectsV2Response.contents();
                 System.out.println("Number of objects in bucket: "+bucketContent.stream().count());
 
-                bucketContent.stream().forEach(System.out::println);
+                //bucketContent.stream().forEach(System.out::println);
+                for (S3Object obj:bucketContent) {
+                    System.out.println(obj.key());
+                }
             }
-
-
         }catch (S3Exception e){
             e.printStackTrace();
         }
+        return bucketContent;
     }
 }
