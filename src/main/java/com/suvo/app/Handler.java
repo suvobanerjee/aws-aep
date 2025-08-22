@@ -7,6 +7,10 @@ import java.util.List;
 
 public class Handler {
 
+    /***********************************
+     * Class for handling the S3 operations
+     ***********************************/
+
     private final S3Client s3Client;
 
     public Handler() {
@@ -106,4 +110,5 @@ public class Handler {
         }
         return bucketContent;
     }
+
 }

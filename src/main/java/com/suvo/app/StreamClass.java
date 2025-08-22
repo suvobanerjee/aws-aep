@@ -31,12 +31,19 @@ public class StreamClass {
     public static void main(String args[]){
         //String s3FileURL = "https://aepbatch.s3.eu-north-1.amazonaws.com/new/SBProgramEnrollmentSchema_aepbatch11.json";
         Util util = new Util();
-        Handler handler = new Handler();
         Properties prop = util.prop();
+        Handler handler = new Handler();
+        AEPOps aepOps = new AEPOps();
+
         String bucketName = prop.getProperty("bucket");
         //String key = "new/SBProgramEnrollmentSchema_aepbatch41_42.json";
 
-        //try(S3Client s3Client = S3Client.builder().httpClientBuilder(ApacheHttpClient.builder()).build();
+
+        /*Create new batch in AEP*/
+        String batchId = aepOps.createBatch(prop.getProperty("dataset"));
+        System.out.println("Batch ID in main method: "+batchId);
+
+/*
         try(S3Client s3Client = DependencyFactory.s3Client();
             CloseableHttpClient httpClient = HttpClients.createDefault()){
 
@@ -84,6 +91,6 @@ public class StreamClass {
             }
         }catch (IOException e){
             e.printStackTrace();
-        }
+        }*/
     }
 }
