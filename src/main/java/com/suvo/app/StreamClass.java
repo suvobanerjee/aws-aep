@@ -36,7 +36,8 @@ public class StreamClass {
         String bucketName = prop.getProperty("bucket");
         //String key = "new/SBProgramEnrollmentSchema_aepbatch41_42.json";
 
-        try(S3Client s3Client = S3Client.builder().httpClientBuilder(ApacheHttpClient.builder()).build();
+        //try(S3Client s3Client = S3Client.builder().httpClientBuilder(ApacheHttpClient.builder()).build();
+        try(S3Client s3Client = DependencyFactory.s3Client();
             CloseableHttpClient httpClient = HttpClients.createDefault()){
 
             List<S3Object> bucketContent = handler.getBucketList(s3Client);
@@ -80,9 +81,7 @@ public class StreamClass {
                         });
                     }
                 }
-
             }
-
         }catch (IOException e){
             e.printStackTrace();
         }
