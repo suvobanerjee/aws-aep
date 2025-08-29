@@ -43,7 +43,7 @@ public class StreamClass {
         String batchId = aepOps.createBatch(prop.getProperty("dataset"));
         System.out.println("Batch ID in main method: "+batchId);
 
-/*
+
         try(S3Client s3Client = DependencyFactory.s3Client();
             CloseableHttpClient httpClient = HttpClients.createDefault()){
 
@@ -62,7 +62,7 @@ public class StreamClass {
                     System.out.println("Requesting S3 object: " + key + " from bucket: " + bucketName);
                     GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
 
-                    String targetApiURL = "https://platform.adobe.io/data/foundation/import/batches/01K2F22PQBGXA2KW35R93RCNRV/datasets/68629fedce7d0f2b5ab3cabd/files/" + key;
+                    String targetApiURL = "https://platform.adobe.io/data/foundation/import/batches/"+batchId+"/datasets/68629fedce7d0f2b5ab3cabd/files/" + key;
 
                     try (ResponseInputStream<GetObjectResponse> s3InputStream = s3Client.getObject(getObjectRequest)) {
 
@@ -91,6 +91,6 @@ public class StreamClass {
             }
         }catch (IOException e){
             e.printStackTrace();
-        }*/
+        }
     }
 }

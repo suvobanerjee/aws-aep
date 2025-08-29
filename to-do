@@ -1,11 +1,11 @@
 ::Things to do::
-1) Create new batch and get the batch id
-2) Generate the target api with the batch id
-3.1) Upload small file to api from S3 -- DONE
+1) Create new batch and get the batch id -- done
+2) Generate the target api with the batch id -- done
+3.1) Upload multiple small file to api from S3 -- DONE
 3.2) Upload large files
     a) Initialize uploading of large file
     b) Divide the large file
     c) Upload part of the large file
     d) Finish uploading the large file
 
-4) Finish uploading the file
+4) Finish uploading the file ---- **********
